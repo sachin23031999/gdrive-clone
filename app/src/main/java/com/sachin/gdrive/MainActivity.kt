@@ -1,28 +1,46 @@
 package com.sachin.gdrive
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
+import com.sachin.gdrive.auth.AuthActivity
+import com.sachin.gdrive.auth.AuthState
+import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.databinding.ActivityMainBinding
+import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+    private val viewModel: MainViewModel by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(binding.root)
-        setNavigationGraph()
+        setupObserver()
+        viewModel.init(this)
+        viewModel.checkLogin(this)
     }
 
-    private fun setNavigationGraph() {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
-        val navController =navHostFragment.navController
-        val navGraph =navController.navInflater.inflate(R.navigation.nav_graph_main)
-        navController.setGraph(navGraph, intent.extras)
+    private fun setupObserver() {
+        viewModel.authState.observe(this) { state ->
+            when (state) {
+                is AuthState.AlreadyLoggedIn -> {
+                    showToast("Already logged in!")
+                    // TODO: navigate to dashboard
+                }
+
+                is AuthState.NotLoggedIn -> {
+                    // navigate to auth activity
+                    startActivity(Intent(this, AuthActivity::class.java))
+                }
+
+                else -> {}
+            }
+        }
     }
+
 }
