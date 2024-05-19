@@ -12,6 +12,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.FileList
+import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.model.DriveEntity
 import com.sachin.gdrive.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
@@ -29,9 +30,9 @@ class DriveServiceProvider(
     private val authRepository: AuthRepository
 ) {
 
-    private lateinit var driveService: Drive
+    private lateinit var gdrive: Drive
 
-    fun createService(context: Context) {
+    fun createService(context: Context): Boolean = try {
         val account = authRepository.getCurrentAccount(context)
         val credential = GoogleAccountCredential.usingOAuth2(
             context, Collections.singleton(
@@ -39,13 +40,17 @@ class DriveServiceProvider(
             )
         )
         credential.selectedAccount = account?.account
-        driveService = Drive.Builder(
+
+        gdrive = Drive.Builder(
             AndroidHttp.newCompatibleTransport(),
             GsonFactory(),
             credential
         )
             .setApplicationName("Drive API Migration")
             .build()
+        true
+    } catch (_: Exception) {
+        false
     }
 
     suspend fun read(fileId: String): ByteArray? {
@@ -54,7 +59,7 @@ class DriveServiceProvider(
             withContext(Dispatchers.IO) {
                 // Download the file content from Google Drive
                 val outputStream = ByteArrayOutputStream()
-                driveService.files().get(fileId)
+                gdrive.files().get(fileId)
                     .executeMediaAndDownloadTo(outputStream)
 
                 // Return the downloaded file content as a ByteArray
@@ -70,13 +75,13 @@ class DriveServiceProvider(
         context: Context,
         fileName: String,
         inputStream: InputStream,
-        parentFolderId: String? = null,
+        parentFolderId: String = ROOT_FOLDER_ID,
         callback: ((progress: Int, error: String?) -> Unit)
     ) {
         try {
             val file = File().apply {
                 name = fileName
-                parentFolderId?.let { parents = listOf(it) }
+                parents = listOf(parentFolderId)
             }
             val fileContent = object : AbstractInputStreamContent("application/octet-stream") {
                 override fun getLength(): Long = inputStream.available().toLong()
@@ -87,7 +92,7 @@ class DriveServiceProvider(
                 }
             }
 
-            driveService.files().create(file, fileContent).apply {
+            gdrive.files().create(file, fileContent).apply {
                 mediaHttpUploader.setProgressListener { uploader ->
                     callback((uploader.progress * 100).toInt(), null)
                 }
@@ -107,61 +112,70 @@ class DriveServiceProvider(
         }
     }
 
-    suspend fun queryChildNodes(
-        context: Context,
-        driveService: Drive,
-        parentFolderId: String
-    ): List<DriveEntity>? {
+    suspend fun createFolder(
+        parentFolderId: String = ROOT_FOLDER_ID,
+        folderName: String
+    ): String? {
         return try {
-            withContext(Dispatchers.IO) {
-                val rootEntities = mutableListOf<DriveEntity>()
-
-                // Query all files from Google Drive
-                val result: FileList = driveService.files().list()
-                    .setPageSize(10)
-                    .setQ("'$parentFolderId' in parents") // Filter by parent folder ID
-                    .setFields("nextPageToken, files(id, name, mimeType, parents)")
-                    .execute()
-
-                // Build the hierarchy
-                buildHierarchy(rootEntities, result.files, driveService)
-                rootEntities
+            val folderMetadata = File().apply {
+                name = folderName
+                mimeType = "application/vnd.google-apps.folder"
+                parents = listOf(parentFolderId)
             }
+
+            val folder = gdrive.files().create(folderMetadata)
+                .setFields("id")
+                .execute()
+
+            folder.id
+        } catch (e: GoogleJsonResponseException) {
+            e.printStackTrace()
+            null
         } catch (e: IOException) {
             e.printStackTrace()
             null
         }
     }
 
-    private suspend fun buildHierarchy(
-        parentEntities: MutableList<DriveEntity>,
-        files: List<File>,
-        driveService: Drive
-    ) {
-        for (file in files) {
-            // Only process next-level children
-            if (file.parents?.get(0) == null) {
-                parentEntities.add(createEntity(file, driveService))
-            } else {
-                val parentId = file.parents[0]
-                val parentFolder =
-                    parentEntities.find { it is DriveEntity.Folder && it.id == parentId }
+    suspend fun queryAll(
+        context: Context,
+        parentFolderId: String
+    ): List<DriveEntity>? {
+        return try {
+            logD { "queryAll()" }
+            val driveEntities = mutableListOf<DriveEntity>()
 
-                if (parentFolder != null && parentFolder is DriveEntity.Folder) {
-                    parentFolder.children.add(createEntity(file, driveService))
+            val result: FileList = gdrive.files().list()
+                .setQ("trashed=false and '$parentFolderId' in parents")
+                .setFields("files(id, name, mimeType), nextPageToken")
+                .setPageSize(100) // Max number of results per page
+                .execute()
+
+            result.files?.forEach { item ->
+                logD { "Item: ${item.name}, MIME type: ${item.mimeType}" }
+                if (item.mimeType == "application/vnd.google-apps.folder") {
+                    driveEntities.add(DriveEntity.Folder(item.id, item.name))
+                } else {
+                    driveEntities.add(DriveEntity.File(item.id, item.name))
                 }
             }
+            driveEntities
+        } catch (ue: UserRecoverableAuthIOException) {
+            context.startActivity(ue.intent)
+            null
+        } catch (e: GoogleJsonResponseException) {
+            if (e.statusCode == 404) {
+                null
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
-    private suspend fun createEntity(file: File, driveService: Drive): DriveEntity {
-        return if (file.mimeType == "application/vnd.google-apps.folder") {
-            val children = mutableListOf<DriveEntity>()
-            val fileList = driveService.files().list().setQ("'${file.id}' in parents").execute()
-            buildHierarchy(children, fileList.files, driveService)
-            DriveEntity.Folder(file.id, file.name, children)
-        } else {
-            DriveEntity.File(file.id, file.name)
-        }
+    companion object {
+        const val ROOT_FOLDER_ID = "root"
     }
 }

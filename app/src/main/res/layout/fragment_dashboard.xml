@@ -18,13 +18,25 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_node" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/button_add"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_add_folder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginVertical="10dp"
+        android:importantForAccessibility="no"
+        android:text="Folder+"
+        app:layout_constraintBottom_toTopOf="@id/button_add_file"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_add_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginHorizontal="32dp"
         android:layout_marginVertical="32dp"
         android:importantForAccessibility="no"
+        android:text="File+"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

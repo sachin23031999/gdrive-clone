@@ -19,12 +19,16 @@ class FileAdapter(private val listener: ItemClickListener) :
                 // TODO: set the icon based on file/folder
                 is DriveEntity.File -> {
                     binding.name.text = node.name
-                    listener.onFileClick(node.name)
+                    binding.root.setOnClickListener {
+                        listener.onFileClick(node)
+                    }
                 }
 
                 is DriveEntity.Folder -> {
                     binding.name.text = node.name
-                    listener.onFolderClick(node.name, node.children)
+                    binding.root.setOnClickListener {
+                        listener.onFolderClick(node)
+                    }
                 }
             }
         }
@@ -45,8 +49,8 @@ class FileAdapter(private val listener: ItemClickListener) :
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun updateNodes(nodes: List<DriveEntity>) {
-        this.files = nodes as MutableList<DriveEntity>
+    fun updateEntities(nodes: List<DriveEntity>) {
+        this.files = nodes.toMutableList()
         notifyDataSetChanged()
     }
 }

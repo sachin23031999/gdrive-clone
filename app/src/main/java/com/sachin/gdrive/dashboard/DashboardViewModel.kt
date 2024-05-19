@@ -17,33 +17,71 @@ class DashboardViewModel(
 
     private val _uploadState = MutableLiveData<UploadState>()
     private val _downloadState = MutableLiveData<DownloadState>()
+    private val _uiState = MutableLiveData<DashboardState>()
+    private val _createFolderState = MutableLiveData<Boolean>()
 
     val uploadState: LiveData<UploadState> = _uploadState
+    val uiState: LiveData<DashboardState> = _uiState
+    val createFolderState: LiveData<Boolean> = _createFolderState
 
     fun init(context: Context) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                driveRepository.initialise(context)
+                val success = driveRepository.initialise(context)
+                _uiState.postValue(
+                    if (success)
+                        DashboardState.InitSuccess
+                    else
+                        DashboardState.InitFailed
+                )
             }
         }
     }
 
-    fun startUpload(context: Context, parentFolder: String?, fileName: String, fileUri: Uri) {
+    fun startUpload(context: Context, parentId: String, fileName: String, fileUri: Uri) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 driveRepository
-                    .uploadFile(context, fileName, fileUri, parentFolder) { progress, error ->
+                    .uploadFile(context, fileName, fileUri, parentId) { progress, error ->
                         error?.let {
                             _uploadState.postValue(UploadState.Failed(fileName, it))
                             return@uploadFile
                         }
 
-                        if (progress.toInt() == 100) {
+                        if (progress == 100) {
                             _uploadState.postValue(UploadState.Uploaded(fileName))
                         } else {
                             _uploadState.postValue(UploadState.Uploading(fileName, progress))
                         }
                     }
+            }
+        }
+    }
+
+    /**
+     * Fetches all files and folders.
+     */
+    fun fetchAll(context: Context, parent: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _uiState.postValue(
+                    DashboardState.FetchSuccess(
+                        driveRepository.queryAllItems(context, parent)
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Creates empty folder in the current folder.
+     */
+    fun createFolder(currentFolder: String, name: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _createFolderState.postValue(
+                    driveRepository.createFolder(currentFolder, name) != null
+                )
             }
         }
     }
