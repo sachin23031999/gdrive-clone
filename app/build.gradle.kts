@@ -40,10 +40,22 @@ android {
 
 dependencies {
     implementation(libs.koin)
-
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.play.service.auth)
+    implementation("com.google.http-client:google-http-client:1.42.3") {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    implementation("com.google.http-client:google-http-client-gson:1.26.0") {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    implementation("com.google.api-client:google-api-client-android:1.26.0") {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
+        exclude(group = "org.apache.httpcomponents")
+    }
+    //implementation(libs.play.service.drive)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

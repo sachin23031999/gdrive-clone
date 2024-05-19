@@ -59,4 +59,7 @@ class AuthRepository {
         fullName = account.displayName,
         email = account.email,
     )
+
+    fun getCurrentAccount(context: Context) =
+        GoogleSignIn.getLastSignedInAccount(context)
 }

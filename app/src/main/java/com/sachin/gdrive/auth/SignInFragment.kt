@@ -1,5 +1,6 @@
 package com.sachin.gdrive.auth
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.fragment.app.Fragment
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.showToast
+import com.sachin.gdrive.dashboard.DashboardActivity
 import com.sachin.gdrive.databinding.FragmentSignInBinding
 import org.koin.android.ext.android.inject
 
@@ -64,7 +66,7 @@ class SignInFragment : Fragment() {
     }
 
     private fun handleLoginSuccess() {
-        // TODO: navigate to dashboard
+        startActivity(Intent(requireContext(), DashboardActivity::class.java))
     }
 
     private fun setupBackPress() {

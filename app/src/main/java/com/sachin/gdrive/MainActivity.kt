@@ -9,6 +9,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.sachin.gdrive.auth.AuthActivity
 import com.sachin.gdrive.auth.AuthState
 import com.sachin.gdrive.common.showToast
+import com.sachin.gdrive.dashboard.DashboardActivity
 import com.sachin.gdrive.databinding.ActivityMainBinding
 import org.koin.android.ext.android.inject
 
@@ -30,7 +31,7 @@ class MainActivity : AppCompatActivity() {
             when (state) {
                 is AuthState.AlreadyLoggedIn -> {
                     showToast("Already logged in!")
-                    // TODO: navigate to dashboard
+                    startActivity(Intent(this, DashboardActivity::class.java))
                 }
 
                 is AuthState.NotLoggedIn -> {
