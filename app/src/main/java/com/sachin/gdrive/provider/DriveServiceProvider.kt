@@ -1,4 +1,4 @@
-package com.sachin.gdrive.repository
+package com.sachin.gdrive.provider
 
 
 import android.content.Context
@@ -12,9 +12,8 @@ import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.FileList
-import com.sachin.gdrive.common.log.logD
-import com.sachin.gdrive.common.log.logE
 import com.sachin.gdrive.model.DriveEntity
+import com.sachin.gdrive.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream

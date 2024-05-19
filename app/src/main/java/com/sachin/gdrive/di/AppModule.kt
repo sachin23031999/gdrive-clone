@@ -5,7 +5,7 @@ import com.sachin.gdrive.auth.SignInViewModel
 import com.sachin.gdrive.dashboard.DashboardViewModel
 import com.sachin.gdrive.repository.AuthRepository
 import com.sachin.gdrive.repository.DriveRepository
-import com.sachin.gdrive.repository.DriveServiceProvider
+import com.sachin.gdrive.provider.DriveServiceProvider
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 

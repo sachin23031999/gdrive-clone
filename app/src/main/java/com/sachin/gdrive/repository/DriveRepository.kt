@@ -3,6 +3,7 @@ package com.sachin.gdrive.repository
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import com.sachin.gdrive.provider.DriveServiceProvider
 import java.io.IOException
 import java.io.InputStream
 

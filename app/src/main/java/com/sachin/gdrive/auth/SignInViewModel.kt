@@ -5,18 +5,19 @@ import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.sachin.gdrive.repository.AuthRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class SignInViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _authState = MutableLiveData<AuthState>()
-    private val bgScope = CoroutineScope(Dispatchers.IO + Job())
 
     val authState: LiveData<AuthState> = _authState
 
@@ -24,11 +25,13 @@ class SignInViewModel(
         authRepository.initialise(context)
     }
     fun checkLogin(context: Context) {
-        authRepository.apply {
-            if (isUserSignedIn(context)) {
-                _authState.postValue(AuthState.AlreadyLoggedIn)
-            } else {
-                _authState.postValue(AuthState.NotLoggedIn)
+        viewModelScope.launch {
+            authRepository.apply {
+                if (isUserSignedIn(context)) {
+                    _authState.postValue(AuthState.AlreadyLoggedIn)
+                } else {
+                    _authState.postValue(AuthState.NotLoggedIn)
+                }
             }
         }
     }
