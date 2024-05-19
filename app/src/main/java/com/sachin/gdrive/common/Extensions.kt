@@ -1,6 +1,8 @@
 package com.sachin.gdrive.common
 
 import android.app.Activity
+import android.app.NotificationManager
+import android.content.Context
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
@@ -30,4 +32,8 @@ fun Fragment.showToast(message: String) {
 fun Activity.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
+
+val Context.notificationManager: NotificationManager
+    get() = getSystemService(NotificationManager::class.java)
+
 

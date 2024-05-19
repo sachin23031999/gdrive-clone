@@ -23,6 +23,7 @@ import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.databinding.FragmentDashboardBinding
 import com.sachin.gdrive.databinding.LayoutDialogAddBinding
 import com.sachin.gdrive.model.DriveEntity
+import com.sachin.gdrive.notification.NotificationManager
 import com.sachin.gdrive.provider.DriveServiceProvider
 import org.koin.android.ext.android.inject
 import java.util.Stack
@@ -34,6 +35,7 @@ class DashboardFragment : Fragment() {
     }
     private val viewModel: DashboardViewModel by inject()
     private var menuItemDelete: MenuItem? = null
+    private val notificationManager: NotificationManager by inject()
 
     // Adding base directory to stack.
     private val folderStack = Stack<DriveEntity.Folder>().apply {
@@ -143,16 +145,24 @@ class DashboardFragment : Fragment() {
             when (state) {
                 is UploadState.Uploading -> {
                     logD { "upload progress: ${state.progress}" }
+                    notificationManager.showUploadNotification(
+                        title = "Uploading file",
+                        desc = state.fileName,
+                        progress = state.progress
+                    )
                 }
 
                 is UploadState.Uploaded -> {
                     logD { "file uploaded" }
+                    showToast("${state.fileName} uploaded")
+                    notificationManager.dismissUploadNotification()
                     fetchFilesAndFolders(folderStack.peek().id)
                 }
 
                 is UploadState.Failed -> {
                     logD { "upload failed" }
                     showToast(state.error)
+                    notificationManager.dismissUploadNotification()
                 }
             }
         }
