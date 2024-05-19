@@ -19,10 +19,12 @@ class DashboardViewModel(
     private val _downloadState = MutableLiveData<DownloadState>()
     private val _uiState = MutableLiveData<DashboardState>()
     private val _createFolderState = MutableLiveData<Boolean>()
+    private val _deleteState = MutableLiveData<Boolean>()
 
     val uploadState: LiveData<UploadState> = _uploadState
     val uiState: LiveData<DashboardState> = _uiState
     val createFolderState: LiveData<Boolean> = _createFolderState
+    val deleteState: LiveData<Boolean> = _deleteState
 
     fun init(context: Context) {
         viewModelScope.launch {
@@ -81,6 +83,16 @@ class DashboardViewModel(
             withContext(Dispatchers.IO) {
                 _createFolderState.postValue(
                     driveRepository.createFolder(currentFolder, name) != null
+                )
+            }
+        }
+    }
+
+    fun deleteItem(context: Context, item: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _deleteState.postValue(
+                    driveRepository.deleteItem(context, item)
                 )
             }
         }

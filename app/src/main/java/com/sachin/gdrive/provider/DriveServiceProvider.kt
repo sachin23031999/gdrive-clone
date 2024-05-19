@@ -140,40 +140,51 @@ class DriveServiceProvider(
     suspend fun queryAll(
         context: Context,
         parentFolderId: String
-    ): List<DriveEntity>? {
-        return try {
-            logD { "queryAll()" }
-            val driveEntities = mutableListOf<DriveEntity>()
+    ): List<DriveEntity>? = try {
+        logD { "queryAll()" }
+        val driveEntities = mutableListOf<DriveEntity>()
 
-            val result: FileList = gdrive.files().list()
-                .setQ("trashed=false and '$parentFolderId' in parents")
-                .setFields("files(id, name, mimeType), nextPageToken")
-                .setPageSize(100) // Max number of results per page
-                .execute()
+        val result: FileList = gdrive.files().list()
+            .setQ("trashed=false and '$parentFolderId' in parents")
+            .setFields("files(id, name, mimeType), nextPageToken")
+            .setPageSize(100) // Max number of results per page
+            .execute()
 
-            result.files?.forEach { item ->
-                logD { "Item: ${item.name}, MIME type: ${item.mimeType}" }
-                if (item.mimeType == "application/vnd.google-apps.folder") {
-                    driveEntities.add(DriveEntity.Folder(item.id, item.name))
-                } else {
-                    driveEntities.add(DriveEntity.File(item.id, item.name))
-                }
-            }
-            driveEntities
-        } catch (ue: UserRecoverableAuthIOException) {
-            context.startActivity(ue.intent)
-            null
-        } catch (e: GoogleJsonResponseException) {
-            if (e.statusCode == 404) {
-                null
+        result.files?.forEach { item ->
+            logD { "Item: ${item.name}, MIME type: ${item.mimeType}" }
+            if (item.mimeType == "application/vnd.google-apps.folder") {
+                driveEntities.add(DriveEntity.Folder(item.id, item.name))
             } else {
-                null
+                driveEntities.add(DriveEntity.File(item.id, item.name))
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        }
+        driveEntities
+    } catch (ue: UserRecoverableAuthIOException) {
+        context.startActivity(ue.intent)
+        null
+    } catch (e: GoogleJsonResponseException) {
+        if (e.statusCode == 404) {
+            null
+        } else {
             null
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
+
+    suspend fun delete(context: Context, id: String): Boolean =
+        try {
+            gdrive.files().delete(id).execute()
+            true
+        } catch (ue: UserRecoverableAuthIOException) {
+            context.startActivity(ue.intent)
+            false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+
 
     companion object {
         const val ROOT_FOLDER_ID = "root"

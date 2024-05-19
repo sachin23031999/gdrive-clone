@@ -4,11 +4,16 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.sachin.gdrive.R
 import com.sachin.gdrive.adapter.FileAdapter
 import com.sachin.gdrive.adapter.ItemClickListener
 import com.sachin.gdrive.common.Utils
@@ -24,8 +29,11 @@ import java.util.Stack
 
 class DashboardFragment : Fragment() {
     private val binding by lazy { FragmentDashboardBinding.inflate(layoutInflater) }
-    private val fileAdapter: FileAdapter by lazy { FileAdapter(itemClickListener) }
+    private val fileAdapter: FileAdapter by lazy {
+        FileAdapter(requireContext(), itemClickListener)
+    }
     private val viewModel: DashboardViewModel by inject()
+    private var menuItemDelete: MenuItem? = null
 
     // Adding base directory to stack.
     private val folderStack = Stack<DriveEntity.Folder>().apply {
@@ -33,12 +41,17 @@ class DashboardFragment : Fragment() {
     }
     private val itemClickListener = object : ItemClickListener {
         override fun onFileClick(file: DriveEntity.File) {
-
+            menuItemDelete?.isVisible = false
         }
 
         override fun onFolderClick(folder: DriveEntity.Folder) {
             folderStack.add(folder)
+            menuItemDelete?.isVisible = false
             fetchFilesAndFolders(folder.id)
+        }
+
+        override fun onItemLongClick(item: DriveEntity) {
+            handleDelete(item)
         }
     }
 
@@ -65,6 +78,7 @@ class DashboardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupBackPress()
         setupObservers()
+        addMenu()
         viewModel.init(requireContext())
         setupClicks()
         setupRecyclerView()
@@ -97,6 +111,7 @@ class DashboardFragment : Fragment() {
         setupUiStateObserver()
         setupUploadStateObserver()
         setupCreateFolderObserver()
+        setupDeleteObserver()
     }
 
 
@@ -148,6 +163,34 @@ class DashboardFragment : Fragment() {
             if (success) {
                 logD { "Folder created" }
                 fetchFilesAndFolders(folderStack.peek().id)
+            } else {
+                showToast("Failed to create folder")
+            }
+        }
+    }
+
+    private fun setupDeleteObserver() {
+        viewModel.deleteState.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                logD { "Item deleted" }
+                fetchFilesAndFolders(folderStack.peek().id)
+            } else {
+                showToast("Delete failed")
+            }
+        }
+    }
+
+    private fun handleDelete(item: DriveEntity) {
+        menuItemDelete?.apply {
+            isVisible = true
+            setOnMenuItemClickListener {
+                isVisible = false
+                if (item is DriveEntity.File)
+                    viewModel.deleteItem(requireContext(), item.id)
+                else if (item is DriveEntity.Folder) {
+                    viewModel.deleteItem(requireContext(), item.id)
+                }
+                true
             }
         }
     }
@@ -190,5 +233,22 @@ class DashboardFragment : Fragment() {
                 fileUri = uri
             )
         }
+    }
+
+    private fun addMenu() {
+        activity?.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main_menu, menu)
+                menuItemDelete = menu.findItem(R.id.action_delete)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return if (menuItem.itemId == R.id.action_delete) {
+                    false
+                } else {
+                    true
+                }
+            }
+        })
     }
 }

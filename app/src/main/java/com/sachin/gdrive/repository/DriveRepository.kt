@@ -47,4 +47,6 @@ class DriveRepository(
     suspend fun queryAllItems(context: Context, parent: String): List<DriveEntity> =
         driveService.queryAll(context, parent) ?: emptyList()
 
+    suspend fun deleteItem(context: Context, id: String): Boolean =
+        driveService.delete(context, id)
 }
