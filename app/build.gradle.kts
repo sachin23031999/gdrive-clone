@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation(libs.play.service.auth)
+    implementation("androidx.work:work-runtime-ktx:2.7.1")
     implementation("com.google.http-client:google-http-client:1.42.3") {
         exclude(group = "org.apache.httpcomponents")
     }
@@ -55,7 +56,6 @@ dependencies {
     implementation("com.google.apis:google-api-services-drive:v3-rev136-1.25.0") {
         exclude(group = "org.apache.httpcomponents")
     }
-    //implementation(libs.play.service.drive)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

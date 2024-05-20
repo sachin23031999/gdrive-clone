@@ -28,9 +28,9 @@ class NotificationManager(
         logD { "Gdrive notification channel created" }
     }
 
-    fun showUploadNotification(title: String, desc: String, progress: Int) {
+    fun showUploadNotification(notifId: Int, title: String, desc: String, progress: Int) {
         context.notificationManager.notify(
-            GDRIVE_NOTIFICATION_ID,
+            notifId,
             getCommonBuilder()
                 .setContentTitle(title)
                 .setOngoing(true)
@@ -41,8 +41,8 @@ class NotificationManager(
         )
     }
 
-    fun dismissUploadNotification() {
-        context.notificationManager.cancel(GDRIVE_NOTIFICATION_ID)
+    fun dismissUploadNotification(notifId: Int) {
+        context.notificationManager.cancel(notifId)
     }
 
     private fun getCommonBuilder() = NotificationCompat.Builder(
@@ -52,6 +52,5 @@ class NotificationManager(
 
     companion object {
         private const val GDRIVE_NOTIFICATION_CHANNEL_ID = "GDriveNotificationChannel"
-        private const val GDRIVE_NOTIFICATION_ID = 201
     }
 }

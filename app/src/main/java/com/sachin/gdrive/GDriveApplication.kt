@@ -2,6 +2,8 @@ package com.sachin.gdrive
 
 import android.app.Application
 import android.util.Log
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.sachin.gdrive.di.appModule
 import com.sachin.gdrive.notification.NotificationManager
 import org.koin.android.ext.koin.androidContext
@@ -12,7 +14,7 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
 
-class GDriveApplication : Application(), KoinComponent {
+class GDriveApplication : Application(), Configuration.Provider, KoinComponent {
 
     private val notificationManager: NotificationManager by inject()
     override fun onCreate() {
@@ -38,4 +40,11 @@ class GDriveApplication : Application(), KoinComponent {
     companion object {
         private val TAG = GDriveApplication::class.java.simpleName
     }
+
+    override fun getWorkManagerConfiguration(): Configuration =
+        Configuration.Builder()
+            .setMinimumLoggingLevel(Log.INFO)
+            .setMaxSchedulerLimit(20) // Maximum parallel workers
+            .build()
+
 }

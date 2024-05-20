@@ -47,7 +47,6 @@ class SignInFragment : Fragment() {
                     handleLoginSuccess()
                 }
                 is AuthState.AlreadyLoggedIn -> {
-                    showToast("Already logged in!")
                     handleLoginSuccess()
                 }
                 is AuthState.SignInFailed -> {

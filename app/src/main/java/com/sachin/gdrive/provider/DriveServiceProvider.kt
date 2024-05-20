@@ -71,7 +71,7 @@ class DriveServiceProvider(
         }
     }
 
-    suspend fun write(
+    fun write(
         context: Context,
         fileName: String,
         inputStream: InputStream,

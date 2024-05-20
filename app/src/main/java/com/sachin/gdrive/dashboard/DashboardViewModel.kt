@@ -6,7 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.repository.DriveRepository
+import com.sachin.gdrive.worker.FileUploadWorker.Companion.TOTAL_PROGRESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,7 +22,6 @@ class DashboardViewModel(
     private val _uiState = MutableLiveData<DashboardState>()
     private val _createFolderState = MutableLiveData<Boolean>()
     private val _deleteState = MutableLiveData<Boolean>()
-
     val uploadState: LiveData<UploadState> = _uploadState
     val uiState: LiveData<DashboardState> = _uiState
     val createFolderState: LiveData<Boolean> = _createFolderState
@@ -42,18 +43,26 @@ class DashboardViewModel(
 
     fun startUpload(context: Context, parentId: String, fileName: String, fileUri: Uri) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                _uploadState.postValue(UploadState.Started(fileName))
                 driveRepository
-                    .uploadFile(context, fileName, fileUri, parentId) { progress, error ->
-                        error?.let {
-                            _uploadState.postValue(UploadState.Failed(fileName, it))
+                    .uploadFile(context, fileName, fileUri, parentId) { name, progress, error ->
+                        logD { "upload status: $name $progress $error" }
+                        if (error != null) {
+                            _uploadState.postValue(
+                                UploadState.Failed(name, error)
+                            )
                             return@uploadFile
                         }
 
-                        if (progress == 100) {
-                            _uploadState.postValue(UploadState.Uploaded(fileName))
+                        if (progress < TOTAL_PROGRESS) {
+                            _uploadState.postValue(
+                                UploadState.Uploading(name, progress)
+                            )
                         } else {
-                            _uploadState.postValue(UploadState.Uploading(fileName, progress))
+                            _uploadState.postValue(
+                                UploadState.Uploaded(name)
+                            )
                         }
                     }
             }

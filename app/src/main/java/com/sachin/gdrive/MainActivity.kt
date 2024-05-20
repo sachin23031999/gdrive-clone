@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.authState.observe(this) { state ->
             when (state) {
                 is AuthState.AlreadyLoggedIn -> {
-                    showToast("Already logged in!")
                     startActivity(Intent(this, DashboardActivity::class.java))
                 }
 
