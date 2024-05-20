@@ -48,6 +48,7 @@ class DashboardFragment : Fragment() {
     private val itemClickListener = object : ItemClickListener {
         override fun onFileClick(file: DriveEntity.File) {
             menuItemDelete?.isVisible = false
+            showToast("work in progress")
         }
 
         override fun onFolderClick(folder: DriveEntity.Folder) {
