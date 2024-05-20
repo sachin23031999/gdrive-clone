@@ -1,21 +1,16 @@
 package com.sachin.gdrive.auth
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import com.sachin.gdrive.R
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.navigateTo
 import com.sachin.gdrive.common.showToast
-import com.sachin.gdrive.dashboard.DashboardActivity
 import com.sachin.gdrive.databinding.FragmentSignInBinding
 import org.koin.android.ext.android.inject
 

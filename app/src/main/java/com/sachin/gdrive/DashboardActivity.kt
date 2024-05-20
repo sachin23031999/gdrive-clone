@@ -1,4 +1,4 @@
-package com.sachin.gdrive.dashboard
+package com.sachin.gdrive
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
