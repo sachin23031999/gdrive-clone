@@ -19,9 +19,9 @@ class MainViewModel(
     fun checkLogin(context: Context) {
         authRepository.apply {
             if (isUserSignedIn(context)) {
-                _authState.postValue(AuthState.AlreadyLoggedIn);
+                _authState.postValue(AuthState.AlreadyLoggedIn)
             } else {
-                _authState.postValue(AuthState.NotLoggedIn);
+                _authState.postValue(AuthState.NotLoggedIn)
             }
         }
     }

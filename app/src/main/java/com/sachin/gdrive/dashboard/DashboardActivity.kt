@@ -1,33 +1,59 @@
 package com.sachin.gdrive.dashboard
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.MenuProvider
 import androidx.navigation.fragment.NavHostFragment
+import com.sachin.gdrive.MainViewModel
 import com.sachin.gdrive.R
+import com.sachin.gdrive.auth.AuthState
+import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.databinding.ActivityDashboardBinding
+import org.koin.android.ext.android.inject
 
 class DashboardActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityDashboardBinding.inflate(layoutInflater) }
+    private val viewModel: MainViewModel by inject()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        logD { "on create" }
         enableEdgeToEdge()
         setContentView(binding.root)
-        setNavigationGraph()
+        setupObserver()
+        viewModel.init(this)
+        viewModel.checkLogin(this)
     }
 
-    private fun setNavigationGraph() {
+    private fun setupObserver() {
+        viewModel.authState.observe(this) { state ->
+            when (state) {
+                is AuthState.AlreadyLoggedIn -> {
+                    logD { "Already logged in" }
+                    setNavigationGraph(
+                        startFragment = R.id.dashboardFragment
+                    )
+                }
+
+                is AuthState.NotLoggedIn -> {
+                    logD { "Not logged in" }
+                    setNavigationGraph(
+                        startFragment = R.id.signInFragment
+                    )
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    private fun setNavigationGraph(startFragment: Int) {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         val navController = navHostFragment.navController
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_dasboard)
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_dashboard)
 
-        navGraph.setStartDestination(R.id.dashboardFragment)
+        navGraph.setStartDestination(startFragment)
         navController.setGraph(navGraph, intent.extras)
     }
 }

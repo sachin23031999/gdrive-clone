@@ -8,6 +8,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import com.sachin.gdrive.R
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.showToast
@@ -44,10 +47,10 @@ class SignInFragment : Fragment() {
             when(state) {
                 is AuthState.SignInSuccess -> {
                     showToast("Login success!")
-                    handleLoginSuccess()
+                    navigateTo(R.id.dashboardFragment)
                 }
                 is AuthState.AlreadyLoggedIn -> {
-                    handleLoginSuccess()
+                    navigateTo(R.id.dashboardFragment)
                 }
                 is AuthState.SignInFailed -> {
                     showToast(state.error)
@@ -64,13 +67,13 @@ class SignInFragment : Fragment() {
         }
     }
 
-    private fun handleLoginSuccess() {
-        startActivity(Intent(requireContext(), DashboardActivity::class.java))
-    }
-
     private fun setupBackPress() {
         handleOnBackPressed {
             activity?.finishAffinity()
         }
     }
+    private fun navigateTo(fragmentId: Int) {
+        findNavController().navigate(fragmentId)
+    }
+
 }
