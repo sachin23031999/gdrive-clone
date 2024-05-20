@@ -18,5 +18,5 @@ val appModule = module {
     factory { DriveServiceProvider(get()) }
     viewModel { MainViewModel(get()) }
     viewModel { SignInViewModel(get()) }
-    viewModel { DashboardViewModel(get()) }
+    viewModel { DashboardViewModel(get(), get()) }
 }

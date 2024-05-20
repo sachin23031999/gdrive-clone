@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.sachin.gdrive.R
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
+import com.sachin.gdrive.common.navigateTo
 import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.dashboard.DashboardActivity
 import com.sachin.gdrive.databinding.FragmentSignInBinding
@@ -72,8 +73,4 @@ class SignInFragment : Fragment() {
             activity?.finishAffinity()
         }
     }
-    private fun navigateTo(fragmentId: Int) {
-        findNavController().navigate(fragmentId)
-    }
-
 }

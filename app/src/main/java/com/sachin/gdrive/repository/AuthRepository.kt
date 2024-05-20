@@ -10,6 +10,8 @@ import com.google.android.gms.common.api.ApiException
 import com.sachin.gdrive.auth.AccountInfo
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.log.logE
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 /**
  * Authentication related repository.
@@ -49,10 +51,20 @@ class AuthRepository {
     fun isUserSignedIn(context: Context): Boolean =
         GoogleSignIn.getLastSignedInAccount(context)?.isExpired == false
 
-    fun logout(): Boolean =
-        googleSignInClient?.signOut().let {
-            it?.isSuccessful ?: false
-        }
+    suspend fun logout(): Boolean {
+        return googleSignInClient?.let { client ->
+            suspendCancellableCoroutine<Boolean> { continuation ->
+                val signOutTask = client.signOut()
+                signOutTask.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        continuation.resume(true)
+                    } else {
+                        continuation.resume(false)
+                    }
+                }
+            }
+        } ?: false
+    }
 
     private fun map(account: GoogleSignInAccount) = AccountInfo(
         authToken = account.idToken ?: "",

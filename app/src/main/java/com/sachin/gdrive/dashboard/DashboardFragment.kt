@@ -20,6 +20,7 @@ import com.sachin.gdrive.adapter.ItemClickListener
 import com.sachin.gdrive.common.Utils
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
+import com.sachin.gdrive.common.navigateTo
 import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.databinding.FragmentDashboardBinding
 import com.sachin.gdrive.databinding.LayoutDialogAddBinding
@@ -35,6 +36,7 @@ class DashboardFragment : Fragment() {
     }
     private val viewModel: DashboardViewModel by inject()
     private var menuItemDelete: MenuItem? = null
+    private var menuItemLogout: MenuItem? = null
 
     // Adding root directory to stack.
     private val folderStack = Stack<DriveEntity.Folder>().apply {
@@ -123,8 +125,8 @@ class DashboardFragment : Fragment() {
         setupUploadStateObserver()
         setupCreateFolderObserver()
         setupDeleteObserver()
+        setupLogoutObserver()
     }
-
 
     private fun setupUiStateObserver() {
         viewModel.uiState.observe(viewLifecycleOwner) { state ->
@@ -155,9 +157,11 @@ class DashboardFragment : Fragment() {
                 is UploadState.Started -> {
                     showToast("Uploading ${state.fileName}")
                 }
+
                 is UploadState.Uploading -> {
                     logD { "progress: ${state.progress}" }
                 }
+
                 is UploadState.Uploaded -> {
                     logD { "file uploaded" }
                     showToast("${state.fileName} uploaded")
@@ -193,6 +197,19 @@ class DashboardFragment : Fragment() {
             }
         }
     }
+
+    private fun setupLogoutObserver() {
+        viewModel.isLoggedOut.observe(viewLifecycleOwner) { loggedOut ->
+            if(loggedOut) {
+                menuItemLogout?.isVisible = false
+                navigateTo(R.id.signInFragment)
+                showToast("logged out")
+            } else {
+                showToast("logout failed")
+            }
+        }
+    }
+
 
     private fun handleDelete(item: DriveEntity) {
         menuItemDelete?.apply {
@@ -254,15 +271,26 @@ class DashboardFragment : Fragment() {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.main_menu, menu)
                 menuItemDelete = menu.findItem(R.id.action_delete)
+                menuItemLogout = menu.findItem(R.id.action_logout)
+                menuItemLogout?.isVisible = true
             }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return if (menuItem.itemId == R.id.action_delete) {
-                    false
-                } else {
-                    true
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                when (menuItem.itemId) {
+                    R.id.action_delete -> {
+                        false
+                    }
+
+                    R.id.action_logout -> {
+                        viewModel.logout()
+                        false
+                    }
+
+                    else -> {
+                        true
+                    }
                 }
-            }
         })
     }
 }
+

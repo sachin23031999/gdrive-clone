@@ -6,4 +6,11 @@
         android:title="Delete"
         android:visible="false"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        android:visible="false"
+        app:showAsAction="never" />
+
 </menu>

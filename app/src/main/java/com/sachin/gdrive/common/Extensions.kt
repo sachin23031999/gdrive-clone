@@ -6,6 +6,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.sachin.gdrive.common.log.logE
 
 /**
@@ -36,4 +37,7 @@ fun Activity.showToast(message: String) {
 val Context.notificationManager: NotificationManager
     get() = getSystemService(NotificationManager::class.java)
 
+fun Fragment.navigateTo(fragmentId: Int) {
+    findNavController().navigate(fragmentId)
+}
 

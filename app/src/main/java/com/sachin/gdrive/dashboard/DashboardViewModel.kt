@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sachin.gdrive.common.log.logD
+import com.sachin.gdrive.repository.AuthRepository
 import com.sachin.gdrive.repository.DriveRepository
 import com.sachin.gdrive.worker.FileUploadWorker.Companion.TOTAL_PROGRESS
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class DashboardViewModel(
-    private val driveRepository: DriveRepository
+    private val driveRepository: DriveRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uploadState = MutableLiveData<UploadState>()
@@ -22,10 +24,13 @@ class DashboardViewModel(
     private val _uiState = MutableLiveData<DashboardState>()
     private val _createFolderState = MutableLiveData<Boolean>()
     private val _deleteState = MutableLiveData<Boolean>()
+    private val _isLoggedOut = MutableLiveData<Boolean>()
+
     val uploadState: LiveData<UploadState> = _uploadState
     val uiState: LiveData<DashboardState> = _uiState
     val createFolderState: LiveData<Boolean> = _createFolderState
     val deleteState: LiveData<Boolean> = _deleteState
+    val isLoggedOut: LiveData<Boolean> = _isLoggedOut
 
     fun init(context: Context) {
         viewModelScope.launch {
@@ -102,6 +107,16 @@ class DashboardViewModel(
             withContext(Dispatchers.IO) {
                 _deleteState.postValue(
                     driveRepository.deleteItem(context, item)
+                )
+            }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _isLoggedOut.postValue(
+                    authRepository.logout()
                 )
             }
         }
