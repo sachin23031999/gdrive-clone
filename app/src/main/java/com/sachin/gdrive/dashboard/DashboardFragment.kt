@@ -36,7 +36,7 @@ class DashboardFragment : Fragment() {
     private val viewModel: DashboardViewModel by inject()
     private var menuItemDelete: MenuItem? = null
 
-    // Adding base directory to stack.
+    // Adding root directory to stack.
     private val folderStack = Stack<DriveEntity.Folder>().apply {
         add(DriveEntity.Folder(DriveServiceProvider.ROOT_FOLDER_ID, "ROOT"))
     }
@@ -85,6 +85,14 @@ class DashboardFragment : Fragment() {
         viewModel.init(requireContext())
         setupClicks()
         setupRecyclerView()
+        handleSwipeRefresh()
+    }
+
+    private fun handleSwipeRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            fetchFilesAndFolders(folderStack.peek().id)
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun fetchFilesAndFolders(parentId: String = "root") {
