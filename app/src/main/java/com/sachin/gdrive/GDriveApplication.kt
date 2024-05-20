@@ -14,6 +14,9 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Main application class for the app.
+ */
 class GDriveApplication : Application(), Configuration.Provider, KoinComponent {
 
     private val notificationManager: NotificationManager by inject()

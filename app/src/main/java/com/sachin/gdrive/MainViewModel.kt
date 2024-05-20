@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import com.sachin.gdrive.auth.AuthState
 import com.sachin.gdrive.repository.AuthRepository
 
+/**
+ * Main view model class.
+ */
 class MainViewModel(
     private val authRepository: AuthRepository
 ) : ViewModel() {
@@ -16,6 +19,10 @@ class MainViewModel(
     fun init(context: Context) {
         authRepository.initialise(context)
     }
+
+    /**
+     * Checks if user is already signed in.
+     */
     fun checkLogin(context: Context) {
         authRepository.apply {
             if (isUserSignedIn(context)) {

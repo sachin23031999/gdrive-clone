@@ -11,6 +11,9 @@ import java.time.format.DateTimeFormatter
 
 object Utils {
 
+    /**
+     * Util method to get the file name from its URI.
+     */
     @SuppressLint("Range")
     fun getFilename(context: Context, uri: Uri?): String {
         if (uri == null) return ""
@@ -24,12 +27,5 @@ object Utils {
         }
 
         return filename
-    }
-
-    fun getTimestamp(milliseconds: Long): String {
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-        val instant = Instant.ofEpochMilli(milliseconds)
-        val date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-        return formatter.format(date) // 08/10/2023 06:35:45
     }
 }

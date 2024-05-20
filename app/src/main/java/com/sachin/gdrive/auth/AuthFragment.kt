@@ -11,12 +11,15 @@ import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.navigateTo
 import com.sachin.gdrive.common.showToast
-import com.sachin.gdrive.databinding.FragmentSignInBinding
+import com.sachin.gdrive.databinding.FragmentAuthBinding
 import org.koin.android.ext.android.inject
 
-class SignInFragment : Fragment() {
-    private val binding by lazy { FragmentSignInBinding.inflate(layoutInflater) }
-    private val viewModel: SignInViewModel by inject()
+/**
+ * This fragment handles all authentication related operations.
+ */
+class AuthFragment : Fragment() {
+    private val binding by lazy { FragmentAuthBinding.inflate(layoutInflater) }
+    private val viewModel: AuthViewModel by inject()
 
     private val gsoContract = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()

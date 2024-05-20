@@ -14,13 +14,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Viewmodel for all the drive and other UI related operations.
+ */
 class DashboardViewModel(
     private val driveRepository: DriveRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uploadState = MutableLiveData<UploadState>()
-    private val _downloadState = MutableLiveData<DownloadState>()
+    private val _downloadState = MutableLiveData<DownloadState>() // TODO
     private val _uiState = MutableLiveData<DashboardState>()
     private val _createFolderState = MutableLiveData<Boolean>()
     private val _deleteState = MutableLiveData<Boolean>()
@@ -32,6 +35,9 @@ class DashboardViewModel(
     val deleteState: LiveData<Boolean> = _deleteState
     val isLoggedOut: LiveData<Boolean> = _isLoggedOut
 
+    /**
+     * Initialises all the dependencies.
+     */
     fun init(context: Context) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -46,6 +52,9 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Starts the file upload.
+     */
     fun startUpload(context: Context, parentId: String, fileName: String, fileUri: Uri) {
         viewModelScope.launch {
             withContext(Dispatchers.Main) {
@@ -102,6 +111,9 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Delete a file/folder/
+     */
     fun deleteItem(context: Context, item: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
@@ -112,6 +124,9 @@ class DashboardViewModel(
         }
     }
 
+    /**
+     * Initiate logout.
+     */
     fun logout() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {

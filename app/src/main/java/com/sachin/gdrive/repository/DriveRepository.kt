@@ -10,7 +10,9 @@ import com.sachin.gdrive.provider.DriveServiceProvider
 import com.sachin.gdrive.worker.FileUploadWorker
 import java.util.UUID
 
-
+/**
+ * Repository for drive related operations.
+ */
 class DriveRepository(
     private val driveService: DriveServiceProvider
 ) {

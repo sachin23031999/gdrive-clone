@@ -2,10 +2,11 @@ package com.sachin.gdrive.dashboard
 
 import com.sachin.gdrive.model.DriveEntity
 
+/**
+ * Holds the state of the download.
+ */
 sealed class DownloadState {
-    data class DOWNLOADING(val fileId: String, val progress: Int) : DownloadState()
-    data class DOWNLOADED(val fileId: String) : DownloadState()
-    data class DOWNLOAD_FAILED(val fileId: String) : DownloadState()
-
-    data class DOWNLOADED_ALL(val list: List<DriveEntity>) : DownloadState()
+    data class Downloading(val fileId: String, val progress: Int) : DownloadState()
+    data class Downloaded(val fileId: String) : DownloadState()
+    data class DownloadFailed(val fileId: String) : DownloadState()
 }

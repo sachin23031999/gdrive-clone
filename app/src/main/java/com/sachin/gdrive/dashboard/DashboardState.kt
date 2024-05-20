@@ -2,6 +2,9 @@ package com.sachin.gdrive.dashboard
 
 import com.sachin.gdrive.model.DriveEntity
 
+/**
+ * Holds the state for dashboard UI.
+ */
 sealed class DashboardState {
 
     data object InitSuccess : DashboardState()

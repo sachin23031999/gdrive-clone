@@ -26,18 +26,22 @@ fun Fragment.handleOnBackPressed(callBack: () -> Unit): OnBackPressedCallback {
     return onBackPressedCallback
 }
 
+/**
+ * Fragment show toast.
+ */
 fun Fragment.showToast(message: String) {
     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 }
 
-fun Activity.showToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-}
-
+/**
+ * Notification manager tied to context.
+ */
 val Context.notificationManager: NotificationManager
     get() = getSystemService(NotificationManager::class.java)
 
+/**
+ * Navigate to extension for fragment.
+ */
 fun Fragment.navigateTo(fragmentId: Int) {
     findNavController().navigate(fragmentId)
 }
-

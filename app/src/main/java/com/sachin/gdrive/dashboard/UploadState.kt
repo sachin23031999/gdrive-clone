@@ -1,5 +1,8 @@
 package com.sachin.gdrive.dashboard
 
+/**
+ * Holds the state of an upload.
+ */
 sealed class UploadState {
     data class Started(val fileName: String) : UploadState()
 

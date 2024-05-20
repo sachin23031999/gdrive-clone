@@ -29,6 +29,9 @@ import com.sachin.gdrive.provider.DriveServiceProvider
 import org.koin.android.ext.android.inject
 import java.util.Stack
 
+/**
+ * This fragment handles all the UI related to the drive dashboard.
+ */
 class DashboardFragment : Fragment() {
     private val binding by lazy { FragmentDashboardBinding.inflate(layoutInflater) }
     private val fileAdapter: FileAdapter by lazy {

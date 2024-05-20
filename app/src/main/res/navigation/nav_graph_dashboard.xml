@@ -12,9 +12,9 @@
         tools:layout="@layout/fragment_dashboard" />
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.sachin.gdrive.auth.SignInFragment"
+        android:name="com.sachin.gdrive.auth.AuthFragment"
         android:label="fragment_sign_in"
-        tools:layout="@layout/fragment_sign_in">
+        tools:layout="@layout/fragment_auth">
         <action
             android:id="@+id/action_signInFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment" />

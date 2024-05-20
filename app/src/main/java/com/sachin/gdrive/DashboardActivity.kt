@@ -11,6 +11,9 @@ import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.databinding.ActivityDashboardBinding
 import org.koin.android.ext.android.inject
 
+/**
+ * Main activity for the application.
+ */
 class DashboardActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityDashboardBinding.inflate(layoutInflater) }
