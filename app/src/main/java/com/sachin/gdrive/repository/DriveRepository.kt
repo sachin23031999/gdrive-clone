@@ -63,8 +63,8 @@ class DriveRepository(
         driveService.createFolder(parent, name)
 
 
-    suspend fun queryAllItems(context: Context, parent: String): List<DriveEntity> =
-        driveService.queryAll(context, parent) ?: emptyList()
+    suspend fun queryAllItems(context: Context, parent: String): List<DriveEntity>? =
+        driveService.queryAll(context, parent)
 
     suspend fun deleteItem(context: Context, id: String): Boolean =
         driveService.delete(context, id)

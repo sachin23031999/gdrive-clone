@@ -91,12 +91,10 @@ class DashboardViewModel(
             withContext(Dispatchers.IO) {
                 _uiState.postValue(
                     driveRepository.queryAllItems(context, parent).let {
-                        if (it.isEmpty()) {
+                        if (it == null) {
                             DashboardState.FetchFailed("Something went wrong, try again")
                         } else {
-                            DashboardState.FetchSuccess(
-                                driveRepository.queryAllItems(context, parent)
-                            )
+                            DashboardState.FetchSuccess(it)
                         }
                     }
 
