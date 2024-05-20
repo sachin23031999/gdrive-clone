@@ -90,9 +90,16 @@ class DashboardViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 _uiState.postValue(
-                    DashboardState.FetchSuccess(
-                        driveRepository.queryAllItems(context, parent)
-                    )
+                    driveRepository.queryAllItems(context, parent).let {
+                        if (it.isEmpty()) {
+                            DashboardState.FetchFailed("Something went wrong, try again")
+                        } else {
+                            DashboardState.FetchSuccess(
+                                driveRepository.queryAllItems(context, parent)
+                            )
+                        }
+                    }
+
                 )
             }
         }

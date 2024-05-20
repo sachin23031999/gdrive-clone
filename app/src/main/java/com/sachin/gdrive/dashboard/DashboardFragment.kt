@@ -143,14 +143,13 @@ class DashboardFragment : Fragment() {
                     showToast("Drive service init failed")
                 }
 
-                is DashboardState.FetchInProgress -> {
-
-                }
-
                 is DashboardState.FetchSuccess -> {
                     fileAdapter.updateEntities(state.entities)
                 }
 
+                is DashboardState.FetchFailed -> {
+                    showToast(state.error)
+                }
             }
         }
     }
@@ -204,7 +203,7 @@ class DashboardFragment : Fragment() {
 
     private fun setupLogoutObserver() {
         viewModel.isLoggedOut.observe(viewLifecycleOwner) { loggedOut ->
-            if(loggedOut) {
+            if (loggedOut) {
                 menuItemLogout?.isVisible = false
                 navigateTo(R.id.signInFragment)
                 showToast("logged out")

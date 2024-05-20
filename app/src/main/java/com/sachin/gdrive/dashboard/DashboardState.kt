@@ -11,7 +11,7 @@ sealed class DashboardState {
 
     data object InitFailed : DashboardState()
 
-    data class FetchInProgress(val progress: Int): DashboardState()
-
     data class FetchSuccess(val entities: List<DriveEntity>) : DashboardState()
+
+    data class FetchFailed(val error: String) : DashboardState()
 }
