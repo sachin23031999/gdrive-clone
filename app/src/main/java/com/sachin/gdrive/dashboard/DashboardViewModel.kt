@@ -7,12 +7,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sachin.gdrive.common.log.logD
+import com.sachin.gdrive.model.DriveEntity
 import com.sachin.gdrive.repository.AuthRepository
 import com.sachin.gdrive.repository.DriveRepository
 import com.sachin.gdrive.worker.FileUploadWorker.Companion.TOTAL_PROGRESS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * Viewmodel for all the drive and other UI related operations.
@@ -30,6 +32,7 @@ class DashboardViewModel(
     private val _isLoggedOut = MutableLiveData<Boolean>()
 
     val uploadState: LiveData<UploadState> = _uploadState
+    val downloadState: LiveData<DownloadState> = _downloadState
     val uiState: LiveData<DashboardState> = _uiState
     val createFolderState: LiveData<Boolean> = _createFolderState
     val deleteState: LiveData<Boolean> = _deleteState
@@ -79,6 +82,23 @@ class DashboardViewModel(
                             )
                         }
                     }
+            }
+        }
+    }
+
+    fun startDownload(cacheDir: File, file: DriveEntity.File) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                _downloadState.postValue(
+                    DownloadState.Started(file)
+                )
+                driveRepository.downloadFile(cacheDir, file.id)?.let { (uri, mimeType) ->
+                    _downloadState.postValue(
+                        DownloadState.Downloaded(file, uri, mimeType)
+                    )
+                } ?: _downloadState.postValue(
+                    DownloadState.Failed(file)
+                )
             }
         }
     }

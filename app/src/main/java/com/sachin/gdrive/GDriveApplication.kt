@@ -1,9 +1,10 @@
 package com.sachin.gdrive
 
 import android.app.Application
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import android.util.Log
 import androidx.work.Configuration
-import androidx.work.WorkManager
 import com.sachin.gdrive.di.appModule
 import com.sachin.gdrive.notification.NotificationManager
 import org.koin.android.ext.koin.androidContext
@@ -12,7 +13,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.startKoin
-import org.koin.java.KoinJavaComponent.inject
+
 
 /**
  * Main application class for the app.
@@ -24,6 +25,9 @@ class GDriveApplication : Application(), Configuration.Provider, KoinComponent {
         super.onCreate()
         Log.d(TAG, "onCreate")
         loadKoin(getProcessName())
+        // To share the file uri to external to open the file.
+        val builder = VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
         notificationManager.buildChannel()
     }
 

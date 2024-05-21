@@ -2,7 +2,6 @@ package com.sachin.gdrive.provider
 
 
 import android.content.Context
-import com.google.api.services.drive.model.File
 import com.google.api.client.extensions.android.http.AndroidHttp
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -11,13 +10,12 @@ import com.google.api.client.http.AbstractInputStreamContent
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.model.DriveEntity
 import com.sachin.gdrive.repository.AuthRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -53,18 +51,16 @@ class DriveServiceProvider(
         false
     }
 
-    suspend fun read(fileId: String): ByteArray? {
+    fun readTo(fileId: String, outputStream: FileOutputStream): String? {
         return try {
-            // Perform the file download operation in the IO dispatcher
-            withContext(Dispatchers.IO) {
-                // Download the file content from Google Drive
-                val outputStream = ByteArrayOutputStream()
-                gdrive.files().get(fileId)
-                    .executeMediaAndDownloadTo(outputStream)
+            val meta = gdrive.files().get(fileId)
+                .setFields("mimeType, name")
+                .execute()
 
-                // Return the downloaded file content as a ByteArray
-                outputStream.toByteArray()
-            }
+            gdrive.files().get(fileId)
+                .executeMediaAndDownloadTo(outputStream)
+
+            meta.mimeType
         } catch (e: IOException) {
             e.printStackTrace()
             null

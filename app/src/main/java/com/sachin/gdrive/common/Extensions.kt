@@ -1,12 +1,12 @@
 package com.sachin.gdrive.common
 
-import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.sachin.gdrive.common.log.logE
 
 /**
@@ -45,3 +45,11 @@ val Context.notificationManager: NotificationManager
 fun Fragment.navigateTo(fragmentId: Int) {
     findNavController().navigate(fragmentId)
 }
+
+/**
+ * Show snack bar at bottom.
+ */
+fun Fragment.showSnackBar(message: String, duration: Int) {
+    Snackbar.make(requireView(), message, duration).show()
+}
+

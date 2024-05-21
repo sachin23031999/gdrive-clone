@@ -1,8 +1,11 @@
 package com.sachin.gdrive.dashboard
 
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -13,14 +16,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
+import com.google.android.material.snackbar.Snackbar
 import com.sachin.gdrive.R
 import com.sachin.gdrive.adapter.FileAdapter
 import com.sachin.gdrive.adapter.ItemClickListener
 import com.sachin.gdrive.common.Utils
 import com.sachin.gdrive.common.handleOnBackPressed
 import com.sachin.gdrive.common.log.logD
+import com.sachin.gdrive.common.log.logE
 import com.sachin.gdrive.common.navigateTo
+import com.sachin.gdrive.common.showSnackBar
 import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.databinding.FragmentDashboardBinding
 import com.sachin.gdrive.databinding.LayoutDialogAddBinding
@@ -40,6 +45,12 @@ class DashboardFragment : Fragment() {
     private val viewModel: DashboardViewModel by inject()
     private var menuItemDelete: MenuItem? = null
     private var menuItemLogout: MenuItem? = null
+    private var downloadInProgress = false
+    private val tempDir by lazy {
+        Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS
+        )
+    }
 
     // Adding root directory to stack.
     private val folderStack = Stack<DriveEntity.Folder>().apply {
@@ -47,8 +58,14 @@ class DashboardFragment : Fragment() {
     }
     private val itemClickListener = object : ItemClickListener {
         override fun onFileClick(file: DriveEntity.File) {
+            tempDir?.let {
+                if (!downloadInProgress) {
+                    viewModel.startDownload(it, file)
+                } else {
+                    showToast("Download already in progress")
+                }
+            }
             menuItemDelete?.isVisible = false
-            showToast("work in progress")
         }
 
         override fun onFolderClick(folder: DriveEntity.Folder) {
@@ -101,6 +118,18 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    private fun openFile(uri: Uri, mimeType: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mimeType)
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            requireActivity().startActivity(intent)
+        } catch (ex: ActivityNotFoundException) {
+            showToast("Not supported")
+        }
+    }
+
     private fun fetchFilesAndFolders(parentId: String = "root") {
         logD { "current folder stack: ${folderStack.joinToString("\n")}" }
         viewModel.fetchAll(requireContext(), parentId)
@@ -127,6 +156,7 @@ class DashboardFragment : Fragment() {
     private fun setupObservers() {
         setupUiStateObserver()
         setupUploadStateObserver()
+        setupDownloadObserver()
         setupCreateFolderObserver()
         setupDeleteObserver()
         setupLogoutObserver()
@@ -149,6 +179,40 @@ class DashboardFragment : Fragment() {
 
                 is DashboardState.FetchFailed -> {
                     showToast(state.error)
+                }
+            }
+        }
+    }
+
+    private fun setupDownloadObserver() {
+        viewModel.downloadState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is DownloadState.Started -> {
+                    logD { "Download started" }
+                    downloadInProgress = true
+                    showSnackBar(
+                        "Downloading...",
+                        Snackbar.LENGTH_INDEFINITE
+                    )
+                }
+
+                is DownloadState.Downloaded -> {
+                    logD { "file downloaded" }
+                    downloadInProgress = false
+                    showSnackBar(
+                        "Downloaded",
+                        Snackbar.LENGTH_SHORT
+                    )
+                    openFile(state.fileUri, state.mimeType)
+                }
+
+                is DownloadState.Failed -> {
+                    logE { "download failed" }
+                    downloadInProgress = false
+                    showSnackBar(
+                        "Download failed",
+                        Snackbar.LENGTH_SHORT
+                    )
                 }
             }
         }
