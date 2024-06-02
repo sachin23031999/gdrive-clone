@@ -1,5 +1,6 @@
 package com.sachin.gdrive.auth
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.sachin.gdrive.common.getActivity
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.ui.Destination
@@ -43,6 +45,7 @@ fun AuthScreen(
     ) { result ->
         viewModel.onSignIn(result.data)
     }
+    SetupBackPress()
     SetupObservers(navController, viewModel) {
         notLoggedIn.value = true
     }
@@ -115,6 +118,14 @@ private fun SetupObservers(
             }
         }
 
+    }
+}
+
+@Composable
+private fun SetupBackPress() {
+    val ctx = LocalContext.current
+    BackHandler {
+        ctx.getActivity()?.finish()
     }
 }
 

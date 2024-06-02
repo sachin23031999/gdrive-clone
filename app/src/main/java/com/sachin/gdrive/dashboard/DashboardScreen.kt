@@ -2,6 +2,7 @@ package com.sachin.gdrive.dashboard
 
 import android.content.Context
 import android.os.Environment
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -11,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.sachin.gdrive.R
 import com.sachin.gdrive.adapter.ItemClickListener
+import com.sachin.gdrive.common.getActivity
 import com.sachin.gdrive.common.log.logD
 import com.sachin.gdrive.common.showToast
 import com.sachin.gdrive.model.DriveEntity
@@ -42,6 +44,7 @@ fun DashboardScreen(
             )
         )
     }
+    SetupBackPress(viewModel, folderStack)
     viewModel.init(ctx)
     SetupUiStateObserver(viewModel, folderStack) { entities ->
         CreateItemList(modifier, entities, listenClicks(viewModel, folderStack))
@@ -138,4 +141,23 @@ private fun fetchFilesAndFolders(
 ) {
     logD { "current folder stack: ${folderStack.joinToString("\n")}" }
     viewModel.fetchAll(context, parentId)
+}
+
+@Composable
+private fun SetupBackPress(viewModel: DashboardViewModel, folderStack: Stack<DriveEntity.Folder>) {
+    val ctx = LocalContext.current
+    BackHandler {
+        logD { "current folder id: ${folderStack.peek().id} name: ${folderStack.peek().id}" }
+        if (folderStack.peek().id == DriveServiceProvider.ROOT_FOLDER_ID) {
+            ctx.getActivity()?.finishAffinity()
+        } else {
+            folderStack.pop()
+            fetchFilesAndFolders(
+                context = ctx,
+                viewModel = viewModel,
+                folderStack = folderStack,
+                parentId = folderStack.peek().id
+            )
+        }
+    }
 }
