@@ -34,6 +34,13 @@ fun Fragment.showToast(message: String) {
 }
 
 /**
+ * Context show toast.
+ */
+fun Context.showToast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+}
+
+/**
  * Notification manager tied to context.
  */
 val Context.notificationManager: NotificationManager

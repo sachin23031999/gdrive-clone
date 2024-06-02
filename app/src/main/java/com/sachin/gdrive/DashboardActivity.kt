@@ -1,14 +1,18 @@
 package com.sachin.gdrive
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.NavHostFragment
-import com.sachin.gdrive.MainViewModel
-import com.sachin.gdrive.R
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Modifier
 import com.sachin.gdrive.auth.AuthState
 import com.sachin.gdrive.common.log.logD
-import com.sachin.gdrive.databinding.ActivityDashboardBinding
+import com.sachin.gdrive.ui.MainNavigation
+import com.sachin.gdrive.ui.Destination
+import com.sachin.gdrive.ui.theme.AppTheme
 import org.koin.android.ext.android.inject
 
 /**
@@ -16,16 +20,31 @@ import org.koin.android.ext.android.inject
  */
 class DashboardActivity : AppCompatActivity() {
 
-    private val binding by lazy { ActivityDashboardBinding.inflate(layoutInflater) }
     private val viewModel: MainViewModel by inject()
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         logD { "on create" }
         enableEdgeToEdge()
-        setContentView(binding.root)
+        setStartScreen(Destination.DASHBOARD_SCREEN)
         setupObserver()
         viewModel.init(this)
         viewModel.checkLogin(this)
+    }
+
+    private fun setStartScreen(startDest: Destination) {
+        setContent {
+            Scaffold {
+                AppTheme {
+                    MainNavigation(
+                        modifier = Modifier.padding(it),
+                        start = startDest.name
+                    )
+                }
+            }
+
+        }
     }
 
     private fun setupObserver() {
@@ -33,30 +52,16 @@ class DashboardActivity : AppCompatActivity() {
             when (state) {
                 is AuthState.AlreadyLoggedIn -> {
                     logD { "Already logged in" }
-                    setNavigationGraph(
-                        startFragment = R.id.dashboardFragment
-                    )
+                    setStartScreen(Destination.DASHBOARD_SCREEN)
                 }
 
                 is AuthState.NotLoggedIn -> {
                     logD { "Not logged in" }
-                    setNavigationGraph(
-                        startFragment = R.id.signInFragment
-                    )
+                    setStartScreen(Destination.AUTH_SCREEN)
                 }
 
                 else -> {}
             }
         }
-    }
-
-    private fun setNavigationGraph(startFragment: Int) {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
-        val navController = navHostFragment.navController
-        val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_dashboard)
-
-        navGraph.setStartDestination(startFragment)
-        navController.setGraph(navGraph, intent.extras)
     }
 }
