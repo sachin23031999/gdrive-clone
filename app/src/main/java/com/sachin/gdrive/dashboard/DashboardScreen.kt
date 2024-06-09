@@ -35,7 +35,9 @@ import com.sachin.gdrive.ui.ListItem
 import com.sachin.gdrive.ui.widget.ActionButton
 import com.sachin.gdrive.ui.widget.ActionMenu
 import com.sachin.gdrive.ui.widget.DialogBox
+import com.sachin.gdrive.ui.widget.DialogType
 import com.sachin.gdrive.ui.widget.MenuAction
+import com.sachin.gdrive.ui.widget.SwipeToDeleteContainer
 import org.koin.androidx.compose.getViewModel
 import java.util.Stack
 
@@ -93,6 +95,7 @@ fun DashboardScreen(
         MenuAction.ADD_FOLDER -> {
             shouldShowDialog.value = true
             DialogBox(
+                type = DialogType.FORM,
                 shouldShow = shouldShowDialog,
                 title = "Add Folder",
                 onPositiveClick = { folderName ->
@@ -174,8 +177,56 @@ private fun SetupObservers(
     folderStack: Stack<DriveEntity.Folder>,
     modifier: Modifier
 ) {
+    val ctx = LocalContext.current
+    val dismissedItemId = remember { mutableStateOf<String?>(null) }
+    val undoSwipe = remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(true) }
+
+    SetupDeleteObserver(viewModel, folderStack)
     SetupUiStateObserver(viewModel, folderStack) { entities ->
-        CreateItemList(modifier, entities, listenClicks(viewModel, folderStack))
+        CreateItemList(
+            modifier, entities,
+            listenClicks(viewModel, folderStack),
+            undoSwipe
+        ) { dismissedItemId.value = it }
+    }
+
+    if (!dismissedItemId.value.isNullOrEmpty()) {
+        undoSwipe.value = false
+        showDialog.value = true
+        DialogBox(
+            shouldShow = showDialog,
+            title = "Confirm",
+            desc = "Are you sure want to delete?",
+            onPositiveClick = { _ ->
+                dismissedItemId.value?.let {
+                    viewModel.deleteItem(ctx, it)
+                }
+                showDialog.value = false
+            },
+            onNegativeClick = {
+                showDialog.value = false
+                undoSwipe.value = true
+            })
+    }
+}
+
+@Composable
+private fun SetupDeleteObserver(
+    viewModel: DashboardViewModel,
+    folderStack: Stack<DriveEntity.Folder>
+) {
+    val ctx = LocalContext.current
+    viewModel.deleteState.observeAsState().value?.let { success ->
+        if (success) {
+            logD { "Item deleted" }
+            ctx.showToast("Item deleted")
+            fetchFilesAndFolders(
+                ctx, viewModel, folderStack, folderStack.peek().id
+            )
+        } else {
+            ctx.showToast("Delete failed")
+        }
     }
 }
 
@@ -239,23 +290,35 @@ private fun listenClicks(
 private fun CreateItemList(
     modifier: Modifier,
     entities: List<DriveEntity>,
-    listener: ItemClickListener
+    listener: ItemClickListener,
+    undo: MutableState<Boolean>,
+    onDismissed: (String) -> Unit = {}
 ) {
     LazyColumn(modifier = modifier) {
-        items(entities) { entity ->
-            when (entity) {
-                is DriveEntity.Folder -> {
-                    ListItem(iconId = R.drawable.ic_folder, name = entity.name) {
-                        listener.onFolderClick(entity)
-                    }
-                }
+        items(entities) { item ->
+            // TODO: on delete, swipe container is hiding the item below the deleted.
+            SwipeToDeleteContainer(
+                item = item,
+                undoSwipe = undo,
+                onDelete = {
+                    onDismissed(it.id)
+                },
+                content = { entity ->
 
-                is DriveEntity.File -> {
-                    ListItem(iconId = R.drawable.ic_file, name = entity.name) {
-                        listener.onFileClick(entity)
+                    when (entity) {
+                        is DriveEntity.Folder -> {
+                            ListItem(iconId = R.drawable.ic_folder, name = entity.name) {
+                                listener.onFolderClick(entity)
+                            }
+                        }
+
+                        is DriveEntity.File -> {
+                            ListItem(iconId = R.drawable.ic_file, name = entity.name) {
+                                listener.onFileClick(entity)
+                            }
+                        }
                     }
-                }
-            }
+                })
         }
     }
 }

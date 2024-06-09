@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.compose.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

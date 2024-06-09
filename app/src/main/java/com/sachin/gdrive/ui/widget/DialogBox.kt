@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,8 +28,10 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun DialogBox(
+    type: DialogType = DialogType.INFO,
     shouldShow: MutableState<Boolean> = mutableStateOf(true),
     title: String,
+    desc: String = "",
     positiveText: String = "OK",
     negativeText: String = "Cancel",
     hint: String = "Enter name",
@@ -54,20 +57,29 @@ fun DialogBox(
                 Column(
                     modifier = Modifier
                         .padding(16.dp)
-                        .fillMaxWidth(),
+                        .wrapContentSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     TextBox(text = title, fontSize = 22.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    TextField(
-                        placeholder = {
-                            Text(text = hint)
-                        },
-                        maxLines = 1,
-                        value = finalText.value,
-                        onValueChange = { finalText.value = it },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    when (type) {
+                        DialogType.INFO -> {
+                            TextBox(text = desc, fontSize = 16.sp)
+                        }
+
+                        DialogType.FORM -> {
+                            TextField(
+                                placeholder = {
+                                    Text(text = hint)
+                                },
+                                maxLines = 1,
+                                value = finalText.value,
+                                onValueChange = { finalText.value = it },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -80,17 +92,17 @@ fun DialogBox(
                             modifier = mod,
                             onClick = {
                                 shouldShow.value = false
-                                onPositiveClick(finalText.value)
+                                onNegativeClick()
                             }) {
-                            Text(positiveText)
+                            Text(negativeText)
                         }
                         Button(
                             modifier = mod,
                             onClick = {
                                 shouldShow.value = false
-                                onNegativeClick()
+                                onPositiveClick(finalText.value)
                             }) {
-                            Text(negativeText)
+                            Text(positiveText)
                         }
                     }
                 }
@@ -99,8 +111,14 @@ fun DialogBox(
     }
 }
 
+enum class DialogType {
+    INFO,
+    FORM
+}
+
 @Composable
 @Preview
 private fun Preview() {
-    DialogBox(title = "Title", onPositiveClick = {})
+    DialogBox(title = "Title",
+        desc = "Are you sure?", onPositiveClick = {})
 }

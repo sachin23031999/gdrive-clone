@@ -137,13 +137,13 @@ class DashboardViewModel(
     }
 
     /**
-     * Delete a file/folder/
+     * Delete a file/folder.
      */
-    fun deleteItem(context: Context, item: String) {
+    fun deleteItem(context: Context, id: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 _deleteState.postValue(
-                    driveRepository.deleteItem(context, item)
+                    driveRepository.deleteItem(context, id)
                 )
             }
         }
